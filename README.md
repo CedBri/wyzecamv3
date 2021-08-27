@@ -3,7 +3,7 @@
 ## Analyzing the `.bin`
 
 By running `binwalk -t demo_wcv3.bin` we can figure out a couple of things.
-```bash
+```
  
 DECIMAL       HEXADECIMAL     DESCRIPTION
 ---------------------------------------------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ We run `./wyze_extractor.py pack FILE_NAME`
 
 ### Generating the uImage header
 We start by fetching the required info with `binwalk -t uimage_header`
-```bash
+```
 DECIMAL       HEXADECIMAL     DESCRIPTION
 ---------------------------------------------------------------------------------------------------------------------
 0             0x0             uImage header, header size: 64 bytes, header CRC: 0xECCED73E, created: 2021-06-11
@@ -89,16 +89,16 @@ We can now run `mkimage -A MIPS -O linux -T firmware -C none -a 0 -e 0 -n jz_fw 
 ## Flashing the micro sd card with the new firmware
 Start by wiping the card clean by running:
 ```bash
-fdisk /dev/mmcblk0 # Make sure you run it one the right device
+fdisk /dev/mmcblk0 # Make sure you run it one the right drive
 ```
 Then deleted the partition
-```bash
+```
 Command (m for help): d
 Selected partition 1
 Partition 1 has been deleted
 ```
 Create a new partition
-```bash
+```
 Command (m for help): n
 Partition type
     p   primary (0 primary, 0 extended, 4 free)
@@ -109,3 +109,23 @@ Select (default p): p
 
 Created a new partition 1 of type 'Linux' and of size XX.X GiB
 ```
+Change type to Fat32
+```
+Command (m for help): t
+Selected partition 1
+Partition type (type L to list all types): b # W95 FAT32
+```
+Write the changes
+```
+Command (m for help): w
+The partition table has been altered.
+Calling ioctl() to re-read partition table.
+Syncing disks
+```
+Finally we format the drive
+```bash
+mkfs.vfat /dev/mmcblk0pX
+```
+
+## Flashing the cam
+

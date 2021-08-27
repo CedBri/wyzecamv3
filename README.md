@@ -25,7 +25,22 @@ DECIMAL       HEXADECIMAL     DESCRIPTION
 By reading the output from binwalk on the latest firmware (4.36.3.19) we can start analyzing a couple of things:
 
 1.  We have a uImage header which is used by the bootloader with a couple of CRC checksums
+    -   It has a size of 64 bytes (0x40 - 0x0)
+    -   It has no compression
+    -   It starts at 0x0
 2.  We have what is most likely a linux kernel `Linux-3.10.14`
+    -   It has a size of 2 031 616 bytes (0x1F0040 - 0x40)
+    -   It is compressed with LZMA
+    -   It starts at 0x40
 3.  We have two squashfs filesystems which we will analyze later
+    -   squashfs(1) 
+        -   It has a size of 3 997 696 bytes (0x5C0040 - 0x1F0040)
+        -   It is a squashfs compressed filesystem
+        -   It starts at 0x1F0040
+    -   squashfs(2)
+        -   It has a size of 3 526 592 bytes (file size - 0x5C0040)
+        -   It is a squashfs compressed filesystem
+        - It starts at 0x5C0040
 
+## Breaking up the binary
 

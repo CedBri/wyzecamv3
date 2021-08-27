@@ -128,4 +128,4 @@ mkfs.vfat /dev/mmcblk0pX
 ```
 
 ## Flashing the cam
-
+See [link](https://support.wyze.com/hc/en-us/articles/360031490871-How-to-flash-your-Wyze-Cam-firmware-manually)

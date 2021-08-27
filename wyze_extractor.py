@@ -25,3 +25,14 @@ if sys.argv[1] == "unpack":
         outfile.close()
         print(f"Wrote {part.name} - {hex(len(data))} bytes")
 
+if sys.argv[1] == "pack":
+    f = open(sys.argv[2], "wb")
+    for part in firmware_parts[1:]:
+        i = open((part.name), "rb")
+        data = i.read()
+        f.write(data)
+        padding = (part.size - len(data))
+        print(f"Wrote {part.name} - {hex(len(data))} bytes")
+        print(f"Padding: {hex(padding)}")
+        f.write(b"\x00" * padding)
+

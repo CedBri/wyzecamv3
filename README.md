@@ -35,15 +35,17 @@ By reading the output from binwalk on the latest firmware (4.36.3.19) we can sta
 3.  We have two squashfs filesystems which we will analyze later
     -   squashfs(1) 
         -   It has a size of 3 997 696 bytes (0x5C0040 - 0x1F0040)
-        -   It is a squashfs compressed filesystem
+        -   It's xz compressed
         -   It starts at 0x1F0040
     -   squashfs(2)
         -   It has a size of 3 526 592 bytes (file size - 0x5C0040)
-        -   It is a squashfs compressed filesystem
+        -   It's xz compressed
         - It starts at 0x5C0040
 
 ## Breaking up the binary
-Once the binary is unpacked using the wyze_extractor.py script, we can start messing with the FS.
+Once the binary is unpacked using the wyze_extractor.py script. `./wyze_extractor.py unpack FILE_NAME` 
+
+We can start messing with the FS.
 
 ### rcS
 Right off the bat, there is nothing too interesting in rcS other than it calls `/system/init/app_init.sh`.
@@ -63,3 +65,47 @@ We can then add `busybox telnetd &` to the `rcS` file
 (Haven't received the cam yet cant test the root passwd)
 
 ## Reassembling the binary
+### squashfs filesystems
+We check the blocksize of the old squashfs with `unsquashfs -s squashfs_1`
+To get the squashfs 1 and 2 back to their compressed states we run `mksquashfs squashfs_1_out/ squashfs_1_new -comp xz -b 131072` on both old squashfs folders
+
+### Combining everything
+We move both `squashfs_NUM_new` to `squashfs_NUM`
+
+We run `./wyze_extractor.py pack FILE_NAME`
+
+### Generating the uImage header
+We start by fetching the required info with `binwalk -t uimage_header`
+```bash
+DECIMAL       HEXADECIMAL     DESCRIPTION
+---------------------------------------------------------------------------------------------------------------------
+0             0x0             uImage header, header size: 64 bytes, header CRC: 0xECCED73E, created: 2021-06-11
+                              12:44:24, image size: 9555968 bytes, Data Address: 0x0, Entry Point: 0x0, data CRC:
+                              0x49FA1464, OS: Linux, CPU: MIPS, image type: Firmware Image, compression type: none,
+                              image name: "jz_fw"
+```
+We can now run `mkimage -A MIPS -O linux -T firmware -C none -a 0 -e 0 -n jz_fw -d exploited_wyze.bin demo_wcv3_exploited.bin`
+
+## Flashing the micro sd card with the new firmware
+Start by wiping the card clean by running:
+```bash
+fdisk /dev/mmcblk0 # Make sure you run it one the right device
+```
+Then deleted the partition
+```bash
+Command (m for help): d
+Selected partition 1
+Partition 1 has been deleted
+```
+Create a new partition
+```bash
+Command (m for help): n
+Partition type
+    p   primary (0 primary, 0 extended, 4 free)
+    e   extended (container for logical partitions)
+Select (default p): p
+
+...
+
+Created a new partition 1 of type 'Linux' and of size XX.X GiB
+```

@@ -43,4 +43,23 @@ By reading the output from binwalk on the latest firmware (4.36.3.19) we can sta
         - It starts at 0x5C0040
 
 ## Breaking up the binary
+Once the binary is unpacked using the wyze_extractor.py script, we can start messing with the FS.
 
+### rcS
+Right off the bat, there is nothing too interesting in rcS other than it calls `/system/init/app_init.sh`.
+
+If we were to add an entry to start telnet via the command `telnetd &` it would be blocked by `/bin/iCamera` from the second squashfs entry.
+
+Running `strings iCamera | grep -i "telnetd"` gives us:
+```bash
+telnetd &
+killall -9 telnetd
+```
+To avoid having our telnet session getting killed by `iCamera` we can call it using busybox instead.
+
+We can then add `busybox telnetd &` to the `rcS` file
+
+### Root password
+(Haven't received the cam yet cant test the root passwd)
+
+## Reassembling the binary
